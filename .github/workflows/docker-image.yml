@@ -15,5 +15,5 @@ jobs:
       - name: Build the Docker image
         run: |
           docker build . --file Dockerfile --tag blake-udf:$(date +%s)
-          docker run --rm -e MYSQL_ROOT_PASSWORD=testpass -d blake-udf
-          docker exec $(docker ps | tail -1 | awk '{print $1}') sh -c "mysql -e 'select 1'"
+          docker run --name blake-udf-test -e MYSQL_ROOT_PASSWORD=testpass -d blake-udf
+          docker exec blake-udf-test sh -c "mysql -ptestpass -e 'select 1'"
