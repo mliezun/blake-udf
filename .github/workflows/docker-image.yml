@@ -2,17 +2,18 @@ name: Docker Image CI
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   pull_request:
-    branches: [ main ]
+    branches: [main]
 
 jobs:
-
   build:
-
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2
-    - name: Build the Docker image
-      run: docker build . --file Dockerfile --tag blake-udf:$(date +%s)
+      - uses: actions/checkout@v2
+      - name: Build the Docker image
+        run: |
+          docker build . --file Dockerfile --tag blake-udf:$(date +%s)
+          docker run --rm -e MYSQL_ROOT_PASSWORD=testpass -d blake-udf
+          docker exec $(docker ps | tail -1 | awk '{print $1}') sh -c "mysql -e 'select 1'"
