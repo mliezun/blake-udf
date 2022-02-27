@@ -2,6 +2,8 @@ FROM rust:1.58
 
 WORKDIR /app
 
+RUN apt-get update && apt-get install -y libclang-dev
+
 COPY . /app/
 
 RUN cargo build --release
