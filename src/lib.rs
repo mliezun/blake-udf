@@ -4,10 +4,11 @@
 
 include!(concat!(env!("OUT_DIR"), "/bindings.rs"));
 
+use blake3;
 use std::ffi::CString;
 use std::slice;
 
-unsafe fn write_message(message_ptr: *mut ::std::os::raw::c_char, message: String) -> u64 {
+unsafe fn write_message(message_ptr: *mut ::std::os::raw::c_char, message: &[u8]) -> u64 {
     let c_message = match CString::new(message) {
         Ok(cs) => cs,
         Err(_) => return 0, // failed to convert to C string
@@ -26,7 +27,7 @@ pub unsafe extern "C" fn blake3_hash_init(
     message: *mut ::std::os::raw::c_char,
 ) -> bool {
     if (*args).arg_count != 1 {
-        write_message(message, String::from("blake3_hash must have one argument"));
+        write_message(message, b"blake3_hash must have one argument");
         return true;
     }
     *(*args).arg_type = Item_result_STRING_RESULT;
@@ -45,7 +46,9 @@ pub unsafe extern "C" fn blake3_hash(
 ) -> *mut ::std::os::raw::c_char {
     let text = *((*args).args);
 
-    let res = String::from(CString::from_raw(text).to_str().unwrap_or_default());
+    let hashed_text = blake3::hash(CString::from_raw(text).as_bytes());
+
+    let res = hashed_text.as_bytes();
 
     *res_length = write_message(result, res);
 
