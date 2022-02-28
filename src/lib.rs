@@ -4,21 +4,8 @@
 
 include!(concat!(env!("OUT_DIR"), "/bindings.rs"));
 
-use blake3;
+use libc::strcpy;
 use std::ffi::CString;
-use std::slice;
-
-unsafe fn write_message(message_ptr: *mut ::std::os::raw::c_char, message: &[u8]) -> u64 {
-    let c_message = match CString::new(message) {
-        Ok(cs) => cs,
-        Err(_) => return 0, // failed to convert to C string
-    };
-    let bytes = c_message.as_bytes_with_nul();
-
-    let message_bytes = slice::from_raw_parts_mut(message_ptr as *mut u8, bytes.len() as usize);
-    message_bytes[..bytes.len()].copy_from_slice(bytes);
-    return bytes.len() as u64;
-}
 
 #[no_mangle]
 pub unsafe extern "C" fn blake3_hash_init(
@@ -27,10 +14,15 @@ pub unsafe extern "C" fn blake3_hash_init(
     message: *mut ::std::os::raw::c_char,
 ) -> bool {
     if (*args).arg_count != 1 {
-        write_message(message, b"blake3_hash must have one argument");
+        strcpy(
+            message,
+            CString::new("blake3_hash must have one argument")
+                .unwrap_or_default()
+                .as_ptr(),
+        );
         return true;
     }
-    *(*args).arg_type = Item_result_STRING_RESULT;
+    *((*args).arg_type) = Item_result_STRING_RESULT;
     (*initid).maybe_null = true;
     return false;
 }
@@ -46,11 +38,13 @@ pub unsafe extern "C" fn blake3_hash(
 ) -> *mut ::std::os::raw::c_char {
     let text = *((*args).args);
 
-    let hashed_text = blake3::hash(CString::from_raw(text).as_bytes());
+    let hashed_text = blake3::hash(CString::from_raw(text).as_bytes()).to_hex();
+    let res = CString::new(hashed_text.as_str())
+        .unwrap_or_default()
+        .as_ptr();
 
-    let res = hashed_text.as_bytes();
-
-    *res_length = write_message(result, res);
+    strcpy(result, res);
+    *res_length = hashed_text.len() as u64;
 
     return result;
 }
