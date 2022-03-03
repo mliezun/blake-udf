@@ -5,7 +5,17 @@
 include!(concat!(env!("OUT_DIR"), "/bindings.rs"));
 
 use libc::strcpy;
-use std::ffi::CString;
+use std::ffi::{CStr, CString};
+
+fn write_result(result_ptr: *mut ::std::os::raw::c_char, message: &[u8]) -> u64 {
+    unsafe {
+        let message_cstring = CString::from_vec_unchecked(message.to_vec());
+        let message_cstring_raw = message_cstring.into_raw();
+        strcpy(result_ptr, message_cstring_raw);
+        drop(CString::from_raw(message_cstring_raw));
+    }
+    return message.len() as u64;
+}
 
 #[no_mangle]
 pub unsafe extern "C" fn blake3_hash_init(
@@ -14,12 +24,7 @@ pub unsafe extern "C" fn blake3_hash_init(
     message: *mut ::std::os::raw::c_char,
 ) -> bool {
     if (*args).arg_count != 1 {
-        strcpy(
-            message,
-            CString::new("blake3_hash must have one argument")
-                .unwrap_or_default()
-                .as_ptr(),
-        );
+        write_result(message, b"blake3_hash must have one argument");
         return true;
     }
     *((*args).arg_type) = Item_result_STRING_RESULT;
@@ -33,18 +38,21 @@ pub unsafe extern "C" fn blake3_hash(
     args: *mut UDF_ARGS,
     result: *mut ::std::os::raw::c_char,
     res_length: *mut ::std::os::raw::c_ulong,
-    _null_value: *mut ::std::os::raw::c_uchar,
-    _: *mut ::std::os::raw::c_uchar,
+    is_null: *mut ::std::os::raw::c_uchar,
+    _error: *mut ::std::os::raw::c_uchar,
 ) -> *mut ::std::os::raw::c_char {
     let text = *((*args).args);
 
-    let hashed_text = blake3::hash(CString::from_raw(text).as_bytes()).to_hex();
-    let res = CString::new(hashed_text.as_str())
-        .unwrap_or_default()
-        .as_ptr();
+    if text.is_null() {
+        *is_null = 1;
+        return result;
+    }
 
-    strcpy(result, res);
-    *res_length = hashed_text.len() as u64;
+    let text_cstr = CStr::from_ptr(text);
+    let text_hash = blake3::hash(text_cstr.to_bytes());
+    let text_hash_hex = text_hash.to_hex();
+
+    *res_length = write_result(result, text_hash_hex.as_bytes());
 
     return result;
 }
