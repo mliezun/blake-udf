@@ -6,13 +6,13 @@ MYSQL_USER="root"
 MYSQL_ROOT_PASSWORD="testpass"
 
 # Start docker container
-#docker container rm -f blake-udf
-#docker build -t blake-udf .
-#docker run --name blake-udf -e MYSQL_ROOT_PASSWORD=$MYSQL_ROOT_PASSWORD -d blake-udf
-#sleep 120 # Mysql takes time to start
+docker container rm -f blake-udf
+docker build -t blake-udf .
+docker run --name blake-udf -e MYSQL_ROOT_PASSWORD=$MYSQL_ROOT_PASSWORD -d blake-udf
+sleep 120 # Mysql takes time to start
 
 # Configure blake3_hash function in mysql
-#docker exec blake-udf sh -c "mysql -u$MYSQL_USER -p$MYSQL_ROOT_PASSWORD -e 'create function blake3_hash returns string soname \"libblake_udf.so\";'"
+docker exec blake-udf sh -c "mysql -u$MYSQL_USER -p$MYSQL_ROOT_PASSWORD -e 'create function blake3_hash returns string soname \"libblake_udf.so\";'"
 
 # Define assert function
 assert_eq() {
