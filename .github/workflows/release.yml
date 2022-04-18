@@ -25,3 +25,5 @@ jobs:
           sudo apt-get install -yyqq libclang-dev
           cargo build --release
           gh release upload "${GITHUB_REF#refs/tags/}" "target/release/libblake_udf.so" --clobber
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
