@@ -19,6 +19,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+      - name: Upload Assets
         run: |
           cargo build --release
           gh release upload "${GITHUB_REF#refs/tags/}" "target/release/libblake_udf.so" --clobber
