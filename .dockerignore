@@ -1,0 +1,11 @@
+# Git related
+.git/
+.github/
+.gitignore
+
+# Rust intermediate
+target/
+
+# Others
+Makefile
+compare_hashes.sh
