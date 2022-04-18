@@ -34,4 +34,4 @@ mysql_blake3_hash () {
 
 assert_eq '17762fddd969a453925d65717ac3eea21320b66b54342fde15128d6caf21215f' $(mysql_blake3_hash 'a') "Hash does not match expected value"
 
-echo "Test passed"
+echo "All hashes match"

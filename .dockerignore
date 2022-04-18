@@ -5,7 +5,7 @@
 
 # Rust intermediate
 target/
+outputs/
 
 # Others
-Makefile
 compare_hashes.sh
