@@ -4,6 +4,13 @@ MySQL UDF that implements blake3 hash algorithm using Rust.
 
 ## How to use
 
+### Download and install MySQL plugin
+
+```bash
+$ wget 'https://github.com/mliezun/blake-udf/releases/download/v0.1.0/libblake_udf.so'
+$ mv libblake_udf.so /usr/lib/mysql/plugin/
+```
+
 #### Load UDF in MySQL
 
 ```bash
