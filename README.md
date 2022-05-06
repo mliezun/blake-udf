@@ -24,3 +24,10 @@ $ mysql --binary-as-hex=0 -uroot -p -e 'select blake3_hash("a");'
 ```
 
 Output: `17762fddd969a453925d65717ac3eea21320b66b54342fde15128d6caf21215f`
+
+## Run tests
+
+```bash
+$ ./compare_hashes.sh
+All hashes match
+```
